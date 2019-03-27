@@ -1,0 +1,13 @@
+{
+  "name": "sockets",
+  "version": "1.0.0",
+  "main": "rooms.js",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "express": "^4.16.4",
+    "kafka-pub-sub": "../kafka-pub-sub",
+    "socket.io": "^2.2.0",
+    "uuid-by-string": "^2.1.0"
+  }
+}
