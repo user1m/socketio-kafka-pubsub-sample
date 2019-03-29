@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-* Pull this branch [kafka](https://github.com/NeuCleans/kafka-docker/tree/pub-sub)
-* Start kafka 
+* Pull this branch of [kafka](https://github.com/NeuCleans/kafka-docker/tree/pub-sub)
+* Start kafka
 
 ```
 > cd kafka-docker
@@ -11,13 +11,13 @@
 > docker-compose -f docker-compose-single-broker.yml up -d
 ```
 
-* to run scaled kafka
+### To run scaled kafka:
+
+* Update the `KAFKA_ADVERTISED_HOST_NAME:` in the `docker-compose-single-broker.scale.yml` by running `> ipconfig getifaddr en0`
 
 ```
->  docker-compose -f docker-compose-single-broker.localhost-scale.yml up -d --scale kafka=3
-
+>  docker-compose -f docker-compose-single-broker.scale.yml up -d --scale kafka=3
 ```
-
 
 ## Installing
 
