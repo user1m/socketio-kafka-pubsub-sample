@@ -12,6 +12,9 @@ const index = require("./routes/index");
 const app = express();
 app.use(index);
 
+//TODO: Update these to your kafka endpoint(s)
+const kHosts = 'localhost:32815,localhost:32816,localhost:32817';
+
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!
 
@@ -65,7 +68,7 @@ function setupKafka(clientId, socket, io) {
     //     replicationFactor: 1
     // }).then(() => kafkaPS.ServiceConsumerGroup.subscribe(clientId))
 
-    kafkaPS.ServiceConsumer.init(clientId).then(() => {
+    kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
         kafkaPS.ServiceProducer.createTopic(clientId)
             .then(() => kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
                 createKafkaListenerFor(clientId, socket, io);
@@ -79,6 +82,8 @@ const users = [
 ];
 
 let connectedUsersCount = 0;
+
+kafkaPS.ServiceConsumer.init('test', kHosts);
 
 function rooms(io) {
     // https://stackoverflow.com/a/8540388

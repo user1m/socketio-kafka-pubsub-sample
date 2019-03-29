@@ -15,7 +15,8 @@ app.use(index);
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!
 
-const kHosts = 'localhost:32809,localhost:32810,localhost:32811';
+//TODO: Update these to your kafka endpoint(s)
+const kHosts = 'localhost:32815,localhost:32816,localhost:32817';
 
 process.on('unhandledRejection', (reason, p) => {
     // https://stackoverflow.com/a/15699740/3562407
@@ -67,15 +68,8 @@ function setupKafka(clientId, socket, io) {
     //     replicationFactor: 1
     // }).then(() => kafkaPS.ServiceConsumerGroupGroup.subscribe(clientId))
 
-    kafkaPS.ServiceConsumerGroup.init(clientId,
-        {
-            partitions: 1,
-            replicationFactor: 1
-        },
-        {
-            kafkaHost: kHosts,
-            groupId: 'TEST_GROUP'
-        }).then(() => {
+    kafkaPS.ServiceConsumerGroup.subscribe(clientId)
+        .then(() => {
             createKafkaListenerFor(clientId, socket, io);
         });
 }
@@ -86,6 +80,16 @@ const users = [
 ];
 
 let connectedUsersCount = 0;
+kafkaPS.ServiceConsumerGroup.init('test',
+    {
+        partitions: 1,
+        replicationFactor: 1
+    },
+    {
+        kafkaHost: kHosts,
+        groupId: 'TEST_GROUP'
+    }
+);
 
 function rooms(io) {
     // https://stackoverflow.com/a/8540388
