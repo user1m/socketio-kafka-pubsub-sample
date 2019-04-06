@@ -68,12 +68,13 @@ function setupKafka(clientId, socket, io) {
     //     replicationFactor: 1
     // }).then(() => kafkaPS.ServiceConsumerGroup.subscribe(clientId))
 
-    kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
-        kafkaPS.ServiceProducer.createTopic(clientId)
-            .then(() => kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
-                createKafkaListenerFor(clientId, socket, io);
-            }))
-    });
+    kafkaPS.ServiceConsumer.subscribe(clientId)
+        .then(() => {
+            kafkaPS.ServiceProducer.createTopic(clientId)
+                .then(() => kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
+                    createKafkaListenerFor(clientId, socket, io);
+                }))
+        });
 }
 
 const users = [
