@@ -9,8 +9,8 @@ class App extends Component {
         this.state = {
             response: false,
             // endpoint: "http://127.0.0.1:4001",
-            // endpoint: "http://127.0.0.1:3006",
-            endpoint: "https://gateway.neucleans.com",
+            endpoint: "http://127.0.0.1:3006",
+            // endpoint: "https://push.neucleans.com",
             // endpoint: "https://2c1e917b.ngrok.io",
             // endpoint: "https://gateway.neucleans.com",
         };
