@@ -8,8 +8,8 @@ class App extends Component {
         super();
         this.state = {
             response: false,
-            // endpoint: "http://127.0.0.1:4001",
-            endpoint: "http://127.0.0.1:3006",
+            endpoint: "http://127.0.0.1:4001",
+            // endpoint: "http://127.0.0.1:30010",
             // endpoint: "https://push.neucleans.com",
             // endpoint: "https://2c1e917b.ngrok.io",
             // endpoint: "https://gateway.neucleans.com",
@@ -54,27 +54,27 @@ class App extends Component {
     componentDidMount() {
         const { endpoint } = this.state;
         const socket = socketIOClient(endpoint, { //https://github.com/socketio/engine.io-client#nodejs-with-extraheaders
-            path: '/sockets',
+            // path: '/sockets',
             transports: ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']
         });
         // const socket = socketIOClient(endpoint);
 
-        // socket.on("fromBackend", data => {
-        //     console.log(JSON.stringify(data, null, 2));
-        //     this.setState({ response: data });
-        //     socket.emit('join', data.id);
-        // });
+        socket.on("fromBackend", data => {
+            // console.log(JSON.stringify(data, null, 2));
+            this.setState({ response: data });
+            socket.emit('join', data.id);
+        });
 
         // socket.emit('join', 'jane@doe.com');
 
         socket.on('connect', () => {
             // socket.emit('join', 'ad285d92-065b-3efb-b32f-3ebe5e83d527');
-            socket.emit('join', 'jane@doe.com');
+            // socket.emit('join', 'jane@doe.com');
         });
 
         socket.on('message', (msg) => {
             console.log(msg);
-            this.setState({ response: msg });
+            // this.setState({ response: msg });
         });
     }
 
