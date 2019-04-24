@@ -86,7 +86,8 @@ function rooms(io) {
 
         socket.on('join', function (room) {
 
-            const consumer = new kafkaPS.ServiceConsumerObject(kHosts, room);
+            // const consumer = new kafkaPS.ServiceConsumerObject(kHosts, room);
+            const consumer = new kafkaPS.ServiceConsumerObject(kHosts);
 
             // if (io.sockets.rooms.indexOf(room) >= 0) {
             //     kafkaPS.ServiceConsumer.resumeTopic(room);
