@@ -15,9 +15,7 @@ const index = require("./routes/index");
 const app = express();
 app.use(index);
 
-//TODO: Update these to your kafka endpoint(s)
 const kHosts = require('./endpoints').scale;
-// 'localhost:32779,localhost:32778,localhost:32777';
 
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!

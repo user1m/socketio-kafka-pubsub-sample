@@ -17,8 +17,6 @@ app.use(index);
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!
 
-//TODO: Update these to your kafka endpoint(s)
-// const kHosts = 'localhost:32775,localhost:32776,localhost:32774';
 const kHosts = require('../endpoints').scale;
 
 process.on('unhandledRejection', (reason, p) => {
