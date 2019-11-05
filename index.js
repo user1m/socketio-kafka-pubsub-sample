@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 const uuidByString = require("uuid-by-string");
 const kafkaPS = require('kafka-pub-sub');
 

@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 // import { getUuidByString } from 'uuid-by-string';
@@ -74,7 +76,7 @@ class App extends Component {
 
         socket.on('message', (msg) => {
             console.log(msg);
-            // this.setState({ response: msg });
+            this.setState({ response: msg });
         });
     }
 

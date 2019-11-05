@@ -1,7 +1,10 @@
+/*jshint esversion: 6 */
+
 // https://www.valentinog.com/blog/socket-io-node-js-react/
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+
 // const axios = require("axios");
 const uuidByString = require("uuid-by-string");
 const kafkaPS = require('kafka-pub-sub');
@@ -13,7 +16,8 @@ const app = express();
 app.use(index);
 
 //TODO: Update these to your kafka endpoint(s)
-const kHosts = 'localhost:32815,localhost:32816,localhost:32817';
+const kHosts = require('./endpoints').scale;
+// 'localhost:32779,localhost:32778,localhost:32777';
 
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!
@@ -106,7 +110,7 @@ function rooms(io) {
             //     socket.broadcast.to(room).emit('message', msg);
             // });
         });
-        connectedUsersCount++;
+        connectedUsersCount = (connectedUsersCount >= 1) ? 0 : connectedUsersCount += 1;
     });
 
     produceKafkaMessages();

@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 // https://www.valentinog.com/blog/socket-io-node-js-react/
 const express = require("express");
 const http = require("http");
@@ -7,13 +9,14 @@ const uuidByString = require("uuid-by-string");
 const kafkaPS = require('kafka-pub-sub');
 
 const port = process.env.PORT || 4001;
-const index = require("./routes/index");
+const index = require("../routes/index");
 
 const app = express();
 app.use(index);
 
 //TODO: Update these to your kafka endpoint(s)
-const kHosts = 'localhost:9092';//'localhost:32815,localhost:32816,localhost:32817';
+// const kHosts = 'localhost:9092';//'localhost:32815,localhost:32816,localhost:32817';
+const kHosts = require('./endpoints').single;
 
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!

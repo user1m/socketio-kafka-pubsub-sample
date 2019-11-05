@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 // https://www.valentinog.com/blog/socket-io-node-js-react/
 const express = require("express");
 const http = require("http");
@@ -7,7 +9,7 @@ const uuidByString = require("uuid-by-string");
 const kafkaPS = require('kafka-pub-sub');
 
 const port = process.env.PORT || 4001;
-const index = require("./routes/index");
+const index = require("../routes/index");
 
 const app = express();
 app.use(index);
@@ -15,8 +17,13 @@ app.use(index);
 const server = http.createServer(app);
 const io = socketIo(server); // < Interesting!
 
-//TODO: Update these to your kafka endpoint(s)
-const kHosts = 'localhost:32815,localhost:32816,localhost:32817';
+const users = [
+    'jane@doe.com',
+    'john@doe.com',
+];
+
+let connectedUsersCount = 0;
+
 
 process.on('unhandledRejection', (reason, p) => {
     // https://stackoverflow.com/a/15699740/3562407
@@ -33,16 +40,25 @@ process.on('uncaughtException', (error) => {
     console.error(msg);
 });
 
+const getUserDataAndEmit = (socket) => {
+    try {
+        socket.emit("fromBackend", { email: users[connectedUsersCount], id: uuidByString(users[connectedUsersCount]) });
+        connectedUsersCount++;
+        // Emitting a new message. It will be consumed by the clientId
+    } catch (error) {
+        console.error(`Error: ${error.code}`);
+    }
+};
 
 function produceKafkaMessages() {
     setInterval(() => {
         console.log('sending....');
         const topic = uuidByString(users[Math.floor(Math.random() * 2)]); //random message to topic
         // const topic = uuidByString(users[0]); //random message to topic
-        kafkaPS.ServiceHLProducer
+        kafkaPS.ServiceProducer
             .buildAMessageObject({ message: `The DateTime is: ${new Date().toISOString()}` }, topic, 'TEST')
             .then((msg) => {
-                kafkaPS.ServiceHLProducer.send([msg])
+                kafkaPS.ServiceProducer.send([msg])
                     .catch(err => { });
             })
         // .catch((error) => { console.error('!!!ERROR: ' + error.stack); })
@@ -51,76 +67,64 @@ function produceKafkaMessages() {
 
 function createKafkaListenerFor(clientId, socket, io) {
     console.log("KL---clientId" + clientId);
-    kafkaPS.ServiceConsumerGroup.listen((message) => {
+    kafkaPS.ServiceConsumer.listen((message) => {
         console.log(`Message: ${JSON.stringify(message, null, 2)}`);
         if (message.topic !== clientId) return;
         const value = JSON.parse(message.value);
         const data = value.data;
-        io.to(clientId).emit('message', { message: `You are client: ${clientId}\n Here's your message: ${data.message}` });
         // socket.emit('fromBackend', { message: `You are client: ${clientId}\n Here's your message: ${data.message}` });
+        io.of(`/${clientId}`).emit('fromBackend', { message: `You are client: ${clientId}\n Here's your message: ${data.message}` });
     });
+    produceKafkaMessages();
 }
 
 function setupKafka(clientId, socket, io) {
     // var clientId = uuidByString(email);
-    // kafkaPS.ServiceHLProducer.createTopic(clientId, {
+    // kafkaPS.ServiceProducer.createTopic(clientId, {
     //     partitions: 1,
     //     replicationFactor: 1
-    // }).then(() => kafkaPS.ServiceConsumerGroupGroup.subscribe(clientId))
+    // }).then(() => kafkaPS.ServiceConsumerGroup.subscribe(clientId))
 
-    kafkaPS.ServiceConsumerGroup.subscribe(clientId)
-        .then(() => {
-            createKafkaListenerFor(clientId, socket, io);
-        });
+    kafkaPS.ServiceConsumer.init(clientId).then(() => {
+        kafkaPS.ServiceProducer.createTopic(clientId)
+            .then(() => kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
+                createKafkaListenerFor(clientId, socket, io);
+            }))
+    });
 }
 
-const users = [
-    'jane@doe.com',
-    'john@doe.com',
-];
+function namespaces(io) {
+    io.on("connection", (socket) => {
+        console.log("New clientId connected");
+        // setTimeout(() => getUserDataAndEmit(socket), 3 * 1000);
 
-let connectedUsersCount = 0;
-kafkaPS.ServiceConsumerGroup.init('test',
-    {
-        partitions: 1,
-        replicationFactor: 1
-    },
-    {
-        kafkaHost: kHosts,
-        groupId: 'TEST_GROUP'
-    }
-);
-
-function rooms(io) {
-    // https://stackoverflow.com/a/8540388
-    io.sockets.on('connection', function (socket) {
         const email = users[connectedUsersCount];
         const id = uuidByString(email);
-
         socket.emit("fromBackend", { email, id });
 
-        socket.on('join', function (room) {
-            console.log("room:", JSON.stringify(room, null, 2));
-            socket.join(room);
-            setupKafka(room, null, io);
+        // socket.on('clientConnected', (data) => {
+        //     console.log(data);
+        //     //create kafka topic listener
+        //     createPrivateChannel(data.id);
+        // });
 
-            // socket.broadcast.to(room).emit('message', { message: "hi" });
-            // io.to(room).emit('message', { message: "hi" });
-
-            // socket.on('message', function (msg) {
-            //     socket.broadcast.to(room).emit('message', msg);
-            // });
-        });
+        socket.on("disconnect", () => console.log("ClientId disconnected"));
         connectedUsersCount++;
     });
 
-    produceKafkaMessages();
+    io.of(`/${id}`)     // https://socket.io/docs/#Restricting-yourself-to-a-namespace
+        .on('connection', function (socket) {
+            console.log('------------client connected to private channel-----------');
+            setupKafka(id, socket, io);
+        });
+
+    io.on("disconnect", () => console.log("ClientId disconnected"));
 }
 
 server.listen(port, () => console.log(`Listening on port ${port}`));
 
 //  function initCG() {
-//     await kafkaPS.ServiceConsumerGroupGroup.init(uuidByString(users[Math.floor(Math.random() * 2)]), {
+//     await kafkaPS.ServiceConsumerGroup.init(uuidByString(users[Math.floor(Math.random() * 2)]), {
 //         partitions: 1,
 //         replicationFactor: 1
 //     }, { kafkaHost: 'localhost:9092', groupId: 'GROUP_TEST' })
@@ -129,4 +133,4 @@ server.listen(port, () => console.log(`Listening on port ${port}`));
 
 // initCG();
 // produceKafkaMessages();
-rooms(io);
+namespaces(io);
