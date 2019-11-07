@@ -18,7 +18,7 @@ app.use(index);
 const kHosts = require('./endpoints').scale;
 
 const server = http.createServer(app);
-const io = socketIo(server); // < Interesting!
+const io = socketIo(server);
 
 process.on('unhandledRejection', (reason, p) => {
     // https://stackoverflow.com/a/15699740/3562407
@@ -46,7 +46,7 @@ function produceKafkaMessages() {
             .then((msg) => {
                 kafkaPS.ServiceProducer.send([msg])
                     .catch(err => { });
-            })
+            });
         // .catch((error) => { console.error('!!!ERROR: ' + error.stack); })
     }, 15 * 1000);
 }
@@ -75,7 +75,7 @@ function setupKafka(clientId, socket, io) {
             kafkaPS.ServiceProducer.createTopic(clientId)
                 .then(() => kafkaPS.ServiceConsumer.subscribe(clientId).then(() => {
                     createKafkaListenerFor(clientId, socket, io);
-                }))
+                }));
         });
 }
 
