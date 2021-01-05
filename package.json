@@ -4,7 +4,7 @@
   "main": "rooms.js",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "express": "^4.16.4",
     "kafka-pub-sub": "git+https://github.com/NeuCleans/kafka-pub-sub.git",
     "socket.io": "^2.2.0",
